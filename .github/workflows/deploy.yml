@@ -10,21 +10,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+      
+      # Install dependencies only for the functions folder
+      - name: Install Functions Dependencies
+        run: npm install
+        working-directory: functions
 
-      - name: Install Dependencies
-        run: |
-          cd functions
-          npm install
-
-      - name: Deploy to Firebase
-        uses: w9jds/firebase-action@v2
+      - name: Deploy to Firebase Functions
+        # FIX 1: Using the official, maintained GitHub Action
+        uses: FirebaseExtended/action-hosting-deploy@v0 
         with:
-          args: deploy --only functions
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          PROJECT_ID: esdras-app
+          # FIX 2: Correctly specifying the path to firebase.json
+          entryPoint: . 
+          
+          # Use your specific Project ID
+          projectId: esdras-backend 
+          
+          # FIX 3: Using the recommended service account secret
+          # This secret must be set up in your GitHub repo settings!
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ESDRAS_BACKEND }}
+          
+          # Deploy ONLY the functions
+          target: functions
+          
